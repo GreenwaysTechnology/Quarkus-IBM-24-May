@@ -1,0 +1,17 @@
+
+
+Quarkus:
+
+1.Quarkus Arch and Quarkus Tech
+2.Quarkus API Building
+3.Quarkus API with database integration
+4.Microservices patterns implementation
+ -Service Communication
+ -Event Sourcing , Event Driven Microservices
+ -Service Discovery and Registry with loading balancing
+ -Distributed configuration
+ -Microservices and distributted Logging
+ -Microservices and caching
+ -Deployments - Cloud Nattive deployment
+   -Containers
+   -Native application using GraalVM 
