@@ -1,0 +1,402 @@
+				Microservices
+.....................................................................................
+What are microservices?
+
+
+Microservices - also known as the microservice architecture - is an architectural style that structures an application as a collection of services that are:
+
+Independently deployable
+Loosely coupled
+Organized around business capabilities
+Owned by a small team
+The microservice architecture enables an organization to deliver large, complex applications rapidly, frequently, reliably and sustainably - a necessity for competing and winning in today’s world.
+
+Let’s look at why its important to deliver software rapidly, frequently, reliably and sustainably.
+
+Before MicroServices: 
+ Monolothic ; single development,deployment.....
+
+Microservices are collection of many design patterns.
+
+
+microservices.io
+Microservice chassis: - Core pattern
+ ->Externalized configuration - sub pattern
+
+MicroProfile config-->SmallyRye config ==== Externalized configuration
+
+
+Build App:
+ - You need to follow some standards (Design patterns)
+                    |
+       Monololithic ------------MicroServices
+          |                        |
+ Patterns for Monolithic 
+                            Chassis   data managment  Reablility
+				|	  |
+			xxx,yyy		xxx,yyyy
+
+
+....................................................................................
+			 Micro services implementation
+.....................................................................................
+Microservices just archtecture, we can implement any language,any framework.
+
+Java implementation:
+1.Spring cloud
+2.Quarkus
+3.Vertx
+etc....
+.....................................................................................
+.....................................................................................
+			Quarkus as Microservice implmentation
+.....................................................................................
+Quarkus is framework which implements the most of the microservice design patterns
+via Ecplise Microprofile specification.
+
+Micro Profile specification is  extension of "Microservice" design patterns.
+
+
+Domain Modeling
+................
+ProductCatelog Management
+Inventory Management
+OrderManagement
+DeliveryManagement
+
+Application Architecture
+
+ProductCataglog
+  ->Service
+
+What is service?
+
+  Service is mini application.
+  Service is sub domain in application 
+  For eg in Ecommerce domain "ProductCaaglog" ,"Cusotmer Management","Order Management"
+
+How to implement service?
+
+  Service can be implemented as a java maven project...
+  Service has apis
+
+API: Application programming interface..
+ Which exposes biz logic 
+ Returns data , recevies data
+
+Service API Design:
+
+1.local api
+  apis are exposed within objects, called by other objects
+2.remote api
+  apis are exposed within objects, called by other objects/programs via networks
+
+Remote apis: (RPI)
+
+1.webservices
+   soap api /rest api/graphql api
+2.RPC
+   TCP api
+   Grpc apis
+3.MOM -Event Driven Microservices
+  Using kafka,Rabbitmq.
+
+..................................................................................
+			RestFull WebService Implementation
+..................................................................................
+         	  Microservice-HTTP Based Microservice
+  	  RESTFull Web Service using JAX-RS  Spec (Jakarta RESTful Web Services)
+		      using RESTEasy Framework
+.....................................................................................
+
+Jakarta RESTful Web Services is spec of JEE , implementation is RestEasy Framework..
+
+In Quarkus RestEasy has been modified for building non blocking apps
+
+
+ 			 QuarkusApp
+			      |
+	             Quarkus RestEasy Module
+			      |
+		         RestEasy Framwork
+			     |
+		   Jarkarta RestFull WebService
+
+RESTEasy:
+
+  RESTEasy is a JBoss / Red Hat project that provides various frameworks to help you build RESTful Web Services and RESTful Java applications. It is an implementation of the Jakarta RESTful Web Services, an Eclipse Foundation specification that provides a Java API for RESTful Web Services over the HTTP protocol.
+
+Moreover, RESTEasy also implements the MicroProfile REST Client specification API
+
+Quarkus team uses RESTEasy framework for building MicroService's REST API Design.
+
+Traditional RESTEasy apps are deployed on "Jboss,Apach Tomcat" like web containers.
+.....................................................................................
+			  Types of RESTFull Web services 
+
+1.Reactive web service - Highly Recommended
+2.Non Reactive web service - Not recommended
+
+How to identify the reactive and non reactive?
+
+via maven dependencies.
+
+Reactive Version
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-resteasy-reactive</artifactId>
+    </dependency>
+
+Non Reactive Version
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-resteasy</artifactId>
+    </dependency>
+
+Latest Version: Only Reactive
+ <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-rest</artifactId>
+        </dependency>
+
+Both dependency cant be added in one single project , either reactive or non reactive.
+.....................................................................................
+			 Reactive,nonblocking Rest apis
+....................................................................................
+REST API development
+
+Quarkus is based on JEE standards and MicroProfile standards
+
+Quarkus rest api based on JAX-RS specification - Jakarta RESTful Web Services.
+
+Quarkus implements RESTEasy Framework which is based on Jakarta WS.
+
+RestEasy is based on Blocking and non blocking arch.
+
+Quarkus by default adds Reactive(nonblocking) dependency.
+
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-rest</artifactId>
+    </dependency>
+
+Steps: create new Project:
+G:\IBM\2024\May\Quarkus\restapi>quarkus create app code-with-quarkus-rest
+-----------
+
+applying codestarts...
+>> java
+>> maven
+>> quarkus
+>> config-properties
+>> tooling-dockerfiles
+>> tooling-maven-wrapper
+>> rest-codestart
+
+-----------
+[SUCCESS]  quarkus project has been successfully generated in:
+--> G:\IBM\2024\May\Quarkus\restapi\code-with-quarkus-rest
+-----------
+Navigate into this directory and get started: quarkus dev
+
+How to run quarkus app?
+
+via quarkus cli command
+via mvn or mvnw script.
+.....................................................................................
+			  REST API Core concepts
+.....................................................................................
+
+Resources:
+   Domain Model which expose api which are accessed by clients using urls 
+
+CustomerResource,ProductResource,PaymentResource etc....
+
+RESTEasy is annotation driven based on jakarta spec:
+
+package org.acme;
+
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+
+@Path("/hello")
+public class GreetingResource {
+
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public String hello() {
+        return "Hello from RESTEasy Reactive";
+    }
+}
+Common Annotations:
+
+@Path - to map url
+@GET -  http get
+@POST - http post
+@PUT -  http put
+@DELETE - http delete.
+....................................................................................
+			 CURD Annotations
+....................................................................................
+
+package com.ibm.rest.api;
+
+import jakarta.ws.rs.*;
+
+@Path("customers")
+public class CustomerResource {
+
+    //api
+    @GET
+    public String findAll(){
+        return  "FindAll";
+    }
+    @POST
+    public String create(){
+        return  "Create";
+    }
+    @PUT
+    public String update(){
+        return  "Update";
+    }
+
+    @DELETE
+    public String remove(){
+        return  "Remove";
+    }
+}
+.....................................................................................
+			 Sub Resource
+.....................................................................................
+package com.ibm.rest.api;
+
+import jakarta.ws.rs.*;
+
+@Path("customers")
+public class CustomerResource {
+
+    //api
+    @GET
+    public String findAll(){
+        return  "FindAll";
+    }
+
+    @GET
+    @Path("reviews")
+    public String getReviews(){
+        return "Reviews";
+    }
+    @POST
+    public String create(){
+        return  "Create";
+    }
+    @PUT
+    public String update(){
+        return  "Update";
+    }
+
+    @DELETE
+    public String remove(){
+        return  "Remove";
+    }
+}
+....................................................................................
+		 How to Pass data to REST API - Input Parameter
+....................................................................................
+Data can be passed to the End Point.
+
+1.Through url - path parameter,query parameter,matrix parameter
+                Matrix parameters are similar to query param, passing more than one 		parameter
+
+2.Through payload
+    Sending data part of the http body..
+
+Through url: Parameters - Path Parameters
+
+package com.ibm.rest.api.parameters;
+
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+
+@Path("books")
+public class BookResource {
+    //path parameter
+    //books/1 , /books/2 /books/3
+    @GET
+    @Path("{Id}")
+    public  String findById(@PathParam("Id") Long id){
+        return  "Books By Id : " + id;
+    }
+}
+
+Query Parameters:
+ /books?pages=100&unit=2
+
+package com.ibm.rest.api.parameters;
+
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.QueryParam;
+
+@Path("books")
+public class BookResource {
+    //Query Parameters
+    //localhost:8080/books/pages?totalPages=10&unit=3
+    @GET
+    @Path("pages")
+    public String getPages(@QueryParam("totalPages") Long pages, @QueryParam("unit") Long unit) {
+        return "Total pages " + pages + " Unit " + unit;
+    }
+}
+.....................................................................................				Default values for Query Params
+.....................................................................................
+package com.ibm.rest.api.parameters;
+
+import jakarta.ws.rs.*;
+
+@Path("books")
+public class BookResource {
+
+
+    //Query Parameters
+    //localhost:8080/books/pages?totalPages=10&unit=3
+    @GET
+    @Path("pages")
+    public String getPages(@QueryParam("totalPages") @DefaultValue("2") Long pages, @QueryParam("unit") @DefaultValue("1") Long unit) {
+        return "Total pages " + pages + " Unit " + unit;
+    }
+}
+.....................................................................................
+				Matrix Parameters
+....................................................................................
+
+GET /books/info;category=story;language=english;author=John
+package com.ibm.rest.api.parameters;
+
+import jakarta.ws.rs.*;
+
+@Path("books")
+public class BookResource {
+    //Matrix parameter
+    @GET
+    @Path("info")
+    public String getBookInfo(@MatrixParam("category")  @DefaultValue("category")     String category, @MatrixParam("lang") @DefaultValue("eng") String lang,     @MatrixParam("author") @DefaultValue("author") String author) {
+        return category + lang + author;
+    }
+}
+.....................................................................................
+
+
+
+
+
+
+
+
+
+
+
