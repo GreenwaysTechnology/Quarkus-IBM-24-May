@@ -1,0 +1,347 @@
+			 Microservice Communications
+.....................................................................................
+
+Services are represented by apis.
+
+API are represented in many ways.
+
+1.RPI
+ You have applied the Microservice architecture pattern. Services must handle requests from the application’s clients. Furthermore, services must sometimes collaborate to handle those requests. They must use an inter-process communication protocol.
+
+RPI technologies:
+1.REST and Graphql - http
+2.gRPC - http2/TCP
+3.Apache Thrift -thrift 
+
+2.Messaging
+You have applied the Microservice architecture pattern. Services must handle requests from the application’s clients. Furthermore, services often collaborate to handle those requests. Consequently, they must use an inter-process communication protocol.
+
+Use asynchronous messaging for inter-service communication. Services communicating by exchanging messages over messaging channels.
+
+Asynchronous messaging technologies
+
+Apache Kafka
+RabbitMQ
+
+RPI - REST To REST Commication
+...............................
+
+This type of communication is HTTP based communication/Http Microservices
+
+Quarkus Implementations:
+
+1.MicroProfile Rest client specification- Both reactive and non reactive.
+
+2.Vertx Web Client - By Default Reactive
+
+3.Java 11 HTTPClient -Blocking and Non blocking way...
+....................................................................................
+			MicroProfile Rest client specification
+....................................................................................
+
+In Service Communications, there would be two actors
+
+1.Caller
+  Who is calling the other services
+
+2.Callee
+   Who is called by the other services
+
+Flow:
+  
+ User/App------http-------->Caller------->Callee
+
+
+Create Caller App:
+.................
+G:\IBM\2024\May\Quarkus\communication\rpi>quarkus create app code-with-quarkus-caller
+
+create callee App
+..................
+G:\IBM\2024\May\Quarkus\communication\rpi>quarkus create app code-with-quarkus-callee
+
+
+Caller Dependency:
+.................
+MicroProfile RestClient
+
+quarkus ext add io.quarkus:quarkus-rest-jackson
+quarkus ext add io.quarkus:quarkus-rest-client
+quarkus ext add io.quarkus:quarkus-rest-client-jackson
+
+Callee Dependency:
+
+quarkus ext add io.quarkus:quarkus-rest-jackson
+quarkus ext add io.quarkus:quarkus-rest-client
+quarkus ext add io.quarkus:quarkus-rest-client-jackson
+
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-rest</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-rest-jackson</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-rest-client</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-rest-client-jackson</artifactId>
+.....................................................................................
+				Callee coding
+.....................................................................................
+application.properties
+quarkus.http.port=9000
+
+Callee Rest api:
+package org.acme;
+
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+
+@Path("/hello")
+public class GreetingResource {
+
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public String hello() {
+        return "Hello, I am Callee";
+    }
+}
+
+application.properties
+quarkus.http.port=9000
+
+quarkus dev
+
+
+The callee app is running in 9000 port, later, we have to use this url for communication    </dependency>
+
+...................................................................................
+				Caller Coding
+..................................................................................
+
+In order to communicate callee, Microprofile Rest client spec offers an interface..
+
+Steps:
+1.write client interface
+
+package com.ibm.rest.client;
+
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
+
+@Path("hello")
+@RegisterRestClient
+public interface HelloRestClientService {
+    //declare callee rest api specification
+    @GET
+    String sayHello();
+}
+1.Here we need to declare interface
+2.Annotate interface with @RegisterRestClient
+3.Annotate Root path @Path("path")
+4.Http method apis are mapping inside interface
+
+
+
+Step 2: Configuration in application.properties
+com.ibm.rest.client.HelloRestClientService/mp-rest/url=http://localhost:9000
+com.ibm.rest.client.HelloRestClientService/mp-rest/scope=javax.inject.Singleton
+
+Step 3: Interface injection
+package org.acme;
+
+import com.ibm.rest.client.HelloRestClientService;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import org.eclipse.microprofile.rest.client.inject.RestClient;
+
+@Path("/welcome")
+public class GreetingResource {
+
+    @Inject
+    @RestClient
+    HelloRestClientService helloRestClientService;
+
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public String hello() {
+        return helloRestClientService.sayHello();
+    }
+}
+
+Testing:
+
+1.Run callee app
+G:\IBM\2024\May\Quarkus\communication\rpi\code-with-quarkus-callee> quarkus dev
+
+2.Run caller app
+G:\IBM\2024\May\Quarkus\communication\rpi\code-with-quarkus-caller>quarkus dev
+
+From Caller app:
+
+GET /welcome
+
+Hello from Quarkus REST
+.....................................................................................
+			   Rest Client with Reactive Response
+.....................................................................................
+
+Callee:
+package org.acme;
+
+import io.smallrye.mutiny.Uni;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+
+@Path("/hello")
+public class GreetingResource {
+
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public String hello() {
+        return "Hello from Quarkus REST";
+    }
+
+    //Reactive response
+
+    @GET
+    @Path("reactive")
+    public Uni<String> hai() {
+        return Uni.createFrom().item("Hai Reactive Response");
+    }
+}
+
+////
+Caller:
+package com.ibm.rest.client;
+
+import io.smallrye.mutiny.Uni;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
+
+@Path("hello")
+@RegisterRestClient
+public interface HelloRestClientService {
+    //declare callee rest api specification
+    @GET
+    String sayHello();
+
+    //reactive api
+    @GET
+    @Path("reactive")
+    Uni<String> sayHai();
+}
+package org.acme;
+
+import com.ibm.rest.client.HelloRestClientService;
+import io.smallrye.mutiny.Uni;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import org.eclipse.microprofile.rest.client.inject.RestClient;
+
+@Path("/welcome")
+public class GreetingResource {
+    @Inject
+    @RestClient
+    HelloRestClientService helloRestClientService;
+
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public String hello() {
+        return helloRestClientService.sayHello();
+    }
+
+    @GET
+    @Path("hai")
+    public Uni<String> haii() {
+        return helloRestClientService.sayHai();
+    }
+}
+		
+....................................................................................
+		  MicroProfile Rest Client Refactored Configuration
+.....................................................................................
+
+application.properties
+com.ibm.rest.client.HelloRestClientService/mp-rest/url=http://localhost:9000
+com.ibm.rest.client.HelloRestClientService/mp-rest/scope=javax.inject.Singleton
+
+Here we have mentioned full package name with interface name, this can be simplified.
+
+
+package com.ibm.rest.client;
+
+import io.smallrye.mutiny.Uni;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
+
+@Path("hello")
+//@RegisterRestClient
+@RegisterRestClient(configKey = "hello-api")
+public interface HelloRestClientService {
+    //declare callee rest api specification
+    @GET
+    @Path("{id}")
+    String sayHello();
+//    @POST
+//    Uni<Response> save(Book book);
+}
+
+application.properties
+#com.ibm.rest.client.HelloRestClientService/mp-rest/url=http://localhost:9000
+#com.ibm.rest.client.HelloRestClientService/mp-rest/scope=javax.inject.Singleton
+hello-api/mp-rest/url=http://localhost:9000
+hello-api/mp-rest/scope=javax.inject.Singleton
+.....................................................................................
+Assigment:
+
+There are two Services
+
+1.Libraray Service - caller
+2.Book Service - Callee
+
+User will talk to Libarary service, will access all book information..
+
+Book Service Must have the following apis
+
+1.Return all Books
+2.Return book by id
+3.Pass Book for save
+4.Update Book information
+5.Remove Book 
+
+Tech Stack:
+1.Reactive Hibernate Orm Panche - Both Reactive version- You can select Active Record or DAO pattern.
+
+2.Service Communication Pattern Using RPI implementation-Microprofile Reactive Client.
+
+
+
+
+
+
+
+
+
+
+
