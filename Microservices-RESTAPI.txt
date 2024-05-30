@@ -1216,7 +1216,7 @@ public class ExceptionResource {
 }
 Assigment -1:
 
-You have to build api
+You have to build api - Use Reactive apis
  Course Api
  
 courseId:1

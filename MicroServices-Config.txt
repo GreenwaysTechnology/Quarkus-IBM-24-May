@@ -31,7 +31,7 @@ https://github.com/smallrye/smallrye-config
 
 		 	QuarkusApp
 			   |
-		     SmallRye Config Implementation
+		  SmallRye Config Implementation
 			  |
 		   MicroProfile Config spec
 
