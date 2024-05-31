@@ -522,9 +522,9 @@ Event Store Products:
 etc....
 
 Our implementation is Kafka.
-.....................................................................................		        Domain Event and Event Sourcing Design Pattern
+.....................................................................................		         Domain Event and Event Sourcing Design Pattern
 			      Implementation
-		   (SmallRye Reactive Messaging Specification)
+		 (SmallRye Reactive Messaging Specification)
 .....................................................................................
 In spring we have Spring Cloud Stream..
 
@@ -1356,7 +1356,7 @@ public enum StockStatus {
     STOCK_ADDED ,
     STOCK_REMOVED
 }
-..................................
+......................................................................................
 
 
 
